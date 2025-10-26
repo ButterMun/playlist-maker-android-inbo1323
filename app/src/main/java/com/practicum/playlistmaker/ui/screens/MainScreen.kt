@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.screens
+package com.practicum.playlistmaker.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

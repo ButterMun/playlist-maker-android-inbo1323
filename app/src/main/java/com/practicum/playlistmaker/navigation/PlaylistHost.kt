@@ -4,9 +4,9 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.practicum.playlistmaker.screens.MainScreen
-import com.practicum.playlistmaker.screens.SearchScreen
-import com.practicum.playlistmaker.screens.SettingsScreen
+import com.practicum.playlistmaker.ui.screens.MainScreen
+import com.practicum.playlistmaker.ui.screens.SearchScreen
+import com.practicum.playlistmaker.ui.screens.SettingsScreen
 
 @Composable
 fun PlaylistHost(

@@ -13,7 +13,7 @@
         android:theme="@style/Theme.PlaylistMaker">
 
         <activity
-            android:name=".MainActivity"
+            android:name=".ui.activity.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.PlaylistMaker">
             <intent-filter>
@@ -23,5 +23,4 @@
         </activity>
 
     </application>
-
 </manifest>
