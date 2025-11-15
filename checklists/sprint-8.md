@@ -1,18 +1,18 @@
-##Checklist Sprint 8
+## Checklist Sprint 8
 
-##Навигация
+## Навигация
 
 Переход на Songs, Playlists, Favorites
 
-##Favorites
+## Favorites
 
 Добавление треков в Favorites 
 
-##Songs
+## Songs
 
 Переход на экран деталей трека при клике на трек
 
-##Track Details
+## Track Details
 
 Отображение данных трека
 
