@@ -1,7 +1,5 @@
 package com.practicum.playlistmaker.ui.screens
 
-import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -17,43 +15,44 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.domain.models.Track
+import com.practicum.playlistmaker.ui.screens.playlists.PlaylistViewModel
+import com.practicum.playlistmaker.ui.screens.search.components.TrackListItem
 import com.practicum.playlistmaker.ui.theme.AppColors
 import com.practicum.playlistmaker.ui.theme.PlaylistMakerTheme
 
 @Composable
-fun SettingsScreen(
+fun FavoritesScreen(
     onBackClick: () -> Unit,
+    onTrackClick: (Track) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
+    val viewModel: PlaylistViewModel = viewModel(
+        factory = PlaylistViewModel.getViewModelFactory()
+    )
 
-    val shareText = stringResource(R.string.share_text)
-    val developerEmail = stringResource(R.string.developer_email)
-    val emailSubject = stringResource(R.string.email_subject)
-    val emailBody = stringResource(R.string.email_body)
-    val offerLink = stringResource(R.string.offer_link)
+    val favoriteTracks by viewModel.favoriteList.collectAsState(initial = emptyList())
 
     Box(
         modifier = modifier.fillMaxSize(),
@@ -69,50 +68,40 @@ fun SettingsScreen(
                     shape = RoundedCornerShape(0.dp)
                 )
         ) {
-            // Контент меню
+            // Контент избранного
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(vertical = 8.dp)
             ) {
-                // Поделиться приложением
-                SettingsMenuItem(
-                    title = stringResource(R.string.settings_share_app),
-                    icon = Icons.Default.Share,
-                    onClick = {
-                        val sendIntent = Intent().apply {
-                            action = Intent.ACTION_SEND
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_TEXT, shareText)
+                if (favoriteTracks.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.no_favorites),
+                            fontSize = 16.sp,
+                            color = AppColors.gray
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp)
+                    ) {
+                        items(favoriteTracks) { track ->
+                            TrackListItem(
+                                track = track,
+                                onClick = { onTrackClick(track) }
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                         }
-                        val chooser = Intent.createChooser(sendIntent, null)
-                        context.startActivity(chooser)
                     }
-                )
-
-                // Написать разработчикам
-                SettingsMenuItem(
-                    title = stringResource(R.string.settings_write_developers),
-                    icon = Icons.Default.Email,
-                    onClick = {
-                        val mailto = "mailto:${developerEmail}?subject=${Uri.encode(emailSubject)}&body=${Uri.encode(emailBody)}"
-                        val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = mailto.toUri()
-                        }
-                        val chooser = Intent.createChooser(emailIntent, null)
-                        context.startActivity(chooser)
-                    }
-                )
-
-                // Пользовательское соглашение
-                SettingsMenuItem(
-                    title = stringResource(R.string.settings_user_agreement),
-                    icon = Icons.Default.ChevronRight,
-                    onClick = {
-                        val browserIntent = Intent(Intent.ACTION_VIEW, offerLink.toUri())
-                        context.startActivity(browserIntent)
-                    }
-                )
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
             }
@@ -135,7 +124,7 @@ fun SettingsScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.back_button),
                     modifier = Modifier
                         .size(32.dp)
                         .clickable { onBackClick() },
@@ -145,7 +134,7 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Text(
-                    text = stringResource(R.string.settings_title),
+                    text = stringResource(R.string.favorites_screen_title),
                     color = AppColors.black,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Medium,
@@ -157,46 +146,14 @@ fun SettingsScreen(
     }
 }
 
-@Composable
-fun SettingsMenuItem(
-    title: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(60.dp)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 24.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.bodyLarge.copy(
-                fontSize = 18.sp,
-                color = AppColors.black,
-                fontWeight = FontWeight.Medium
-            ),
-            modifier = Modifier.weight(1f)
-        )
-
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            tint = AppColors.gray,
-            modifier = Modifier.size(26.dp)
-        )
-    }
-}
-
 @Preview(showBackground = true)
 @Composable
-fun SettingsPreview() {
+fun FavoritesPreview() {
     PlaylistMakerTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = AppColors.white) {
-            SettingsScreen(
-                onBackClick = { }
+            FavoritesScreen(
+                onBackClick = { },
+                onTrackClick = { }
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.practicum.playlistmaker.ui.screens.search.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,18 +20,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.models.Track
 
-// компонент для отображения отдельного трека
 @Composable
-fun TrackListItem(track: Track) {
+fun TrackListItem(
+    track: Track,
+    onClick: () -> Unit
+
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable(onClick = onClick)
             .padding(vertical = 8.dp)
     ) {
         Row(
@@ -43,7 +49,7 @@ fun TrackListItem(track: Track) {
             // Левая часть: иконка музыки
             Image(
                 painter = painterResource(id = R.drawable.ic_music),
-                contentDescription = "Трек ${track.trackName}",
+                contentDescription = stringResource(R.string.track_content_description, track.trackName),
                 modifier = Modifier.size(40.dp)
             )
 
@@ -81,14 +87,14 @@ fun TrackListItem(track: Track) {
 
                 Icon(
                     imageVector = Icons.Default.ChevronRight,
-                    contentDescription = "Подробнее",
+                    contentDescription = stringResource(R.string.more_details),
                     tint = Color.Gray,
                     modifier = Modifier.size(40.dp)
                 )
             }
         }
 
-        // Разделитель под каждым треком
+        // Разделитель
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()

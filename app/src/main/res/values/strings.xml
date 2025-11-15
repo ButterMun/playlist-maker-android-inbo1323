@@ -1,4 +1,5 @@
 <resources>
+    <!-- SettingsScreen -->
     <string name="app_name">Playlist Maker</string>
     <string name="settings_title">Настройки</string>
     <string name="settings_share_app">Поделиться приложением</string>
@@ -9,6 +10,65 @@
     <string name="email_subject">Сообщение разработчикам и разработчицам приложения Playlist Maker</string>
     <string name="email_body">Спасибо разработчикам и разработчицам за крутое приложение!</string>
     <string name="offer_link">https://yandex.ru/legal/praktikum_offer/07022019/</string>
+
+    <!-- MainScreen -->
+    <string name="main_screen_title">Playlist maker</string>
+    <string name="search_menu_item">Поиск</string>
+    <string name="playlists_menu_item">Плейлисты</string>
+    <string name="favorites_menu_item">Избранное</string>
+    <string name="settings_menu_item">Настройки</string>
+
+    <!-- SearchScreen -->
+    <string name="search_screen_title">Поиск</string>
+    <string name="search_hint">Поиск</string>
+    <string name="search_initial_text">Введите строку для поиска</string>
+    <string name="search_empty_results">Ничего не найдено</string>
+    <string name="search_error_prefix">Ошибка:</string>
+    <string name="track_content_description">Трек %s</string>
+    <string name="more_details">Подробнее</string>
+
+    <!-- accessibility -->
+    <string name="back_button">Назад</string>
+    <string name="search_icon">Поиск</string>
+    <string name="clear_search">Очистить поиск</string>
+    <string name="track_item_description">Трек %s</string>
+
+    <!-- Playlists -->
+    <string name="playlists_screen_title">Плейлисты</string>
+    <string name="new_playlist_title">Новый плейлист</string>
+    <string name="playlist_name_hint">Название плейлиста</string>
+    <string name="playlist_name_placeholder">Введите название</string>
+    <string name="playlist_description_hint">Описание плейлиста</string>
+    <string name="playlist_icon">Иконка плейлиста</string>
+    <string name="playlist_description_placeholder">Введите описание</string>
+    <string name="save_playlist">Создать</string>
+    <string name="add_playlist">Добавить плейлист</string>
+    <string name="tracks_count">треков</string>
+    <string name="no_playlists">Плейлистов пока нет</string>
+    <string name="select_playlist">Выберите плейлист</string>
+    <string name="duplicate_playlist_error">Плейлист уже существует</string>
+
+
+
+    <!-- Track Details -->
+    <string name="track_details_title">О треке</string>
+    <string name="add_to_favorites">Добавить в избранное</string>
+    <string name="remove_from_favorites">Удалить из избранного</string>
+    <string name="add_to_playlist">Добавить в плейлист</string>
+    <string name="favorite">Избранное</string>
+    <string name="playlist">Плейлист</string>
+    <string name="added_to_playlist">Добавлено в плейлист</string>
+    <string name="select_playlist_title">Выберите плейлист</string>
+    <string name="close">Закрыть</string>
+
+
+    <!-- Favorites -->
+    <string name="favorites_screen_title">Избранное</string>
+    <string name="no_favorites">Избранных треков пока нет</string>
+
+    <!-- Playlist -->
+    <string name="playlist_tracks_info">Треков: %1$d • %2$d мин</string>
+
 
 
 </resources>

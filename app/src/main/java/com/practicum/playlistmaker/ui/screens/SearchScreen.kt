@@ -38,21 +38,25 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.domain.models.Track
 import com.practicum.playlistmaker.ui.screens.search.SearchState
 import com.practicum.playlistmaker.ui.screens.search.SearchViewModel
 import com.practicum.playlistmaker.ui.screens.search.components.TrackListItem
+import com.practicum.playlistmaker.ui.theme.AppColors
 import com.practicum.playlistmaker.ui.theme.PlaylistMakerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
     onBackClick: () -> Unit,
+    onTrackClick: (Track) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Получаем ViewModel через фабрику
@@ -76,7 +80,7 @@ fun SearchScreen(
                 .fillMaxSize()
                 .padding(top = 70.dp)
                 .background(
-                    color = Color.White,
+                    color = AppColors.white,
                     shape = RoundedCornerShape(0.dp)
                 )
         ) {
@@ -95,7 +99,10 @@ fun SearchScreen(
                             viewModel.search(searchText)
                         }
                     },
-                    onClearClick = { searchText = "" },
+                    onClearClick = {
+                        searchText = ""
+                        viewModel.clearSearch()
+                                   },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
@@ -113,9 +120,9 @@ fun SearchScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Введите название песни для поиска",
+                                text = stringResource(R.string.search_initial_text),
                                 fontSize = 16.sp,
-                                color = Color.Gray
+                                color = AppColors.gray
                             )
                         }
                     }
@@ -141,9 +148,9 @@ fun SearchScreen(
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = "Ничего не найдено",
+                                    text = stringResource(R.string.search_empty_results),
                                     fontSize = 16.sp,
-                                    color = Color.Gray
+                                    color = AppColors.gray
                                 )
                             }
                         } else {
@@ -153,7 +160,10 @@ fun SearchScreen(
                                     .padding(horizontal = 16.dp)
                             ) {
                                 items(tracks) { track ->
-                                    TrackListItem(track = track)
+                                    TrackListItem(
+                                        track = track,
+                                        onClick = { onTrackClick(track) }
+                                    )
                                     Spacer(modifier = Modifier.height(8.dp))
                                 }
                             }
@@ -169,9 +179,9 @@ fun SearchScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = "Ошибка: $error",
+                                text = "${stringResource(R.string.search_error_prefix)} $error",
                                 fontSize = 16.sp,
-                                color = Color.Red
+                                color = AppColors.red
                             )
                         }
                     }
@@ -184,7 +194,7 @@ fun SearchScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .background(Color.White)
+                .background(AppColors.white)
                 .windowInsetsPadding(WindowInsets.statusBars),
             contentAlignment = Alignment.CenterStart
         ) {
@@ -196,17 +206,18 @@ fun SearchScreen(
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
+                    contentDescription = stringResource(R.string.back_button),
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { onBackClick() }
+                        .clickable { onBackClick() },
+                    tint = AppColors.black
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Text(
-                    text = "Поиск",
-                    color = Color.Black,
+                    text = stringResource(R.string.search_screen_title),
+                    color = AppColors.black,
                     style = MaterialTheme.typography.titleMedium.copy(
                         fontWeight = FontWeight.Medium,
                         fontSize = 22.sp
@@ -231,16 +242,16 @@ fun SearchTextField(
         modifier = modifier,
         placeholder = {
             Text(
-                text = "Поиск",
-                color = Color.Gray,
+                text = stringResource(R.string.search_hint),
+                color = AppColors.gray,
                 fontSize = 16.sp
             )
         },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = Color.Gray,
+                contentDescription = stringResource(R.string.search_icon),
+                tint = AppColors.gray,
                 modifier = Modifier.clickable { onSearchClick() }
             )
         },
@@ -248,21 +259,21 @@ fun SearchTextField(
             if (value.isNotEmpty()) {
                 Icon(
                     imageVector = Icons.Default.Close,
-                    contentDescription = "Clear search",
+                    contentDescription = stringResource(R.string.clear_search),
                     modifier = Modifier
                         .clickable { onClearClick() },
-                    tint = Color.Gray
+                    tint = AppColors.gray
                 )
             }
         },
         colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Color.Gray,
-            unfocusedBorderColor = Color.LightGray,
-            focusedContainerColor = Color(0xFFF5F5F5),
-            unfocusedContainerColor = Color(0xFFF5F5F5),
-            cursorColor = Color.Black,
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black
+            focusedBorderColor = AppColors.gray,
+            unfocusedBorderColor = AppColors.lightGray,
+            focusedContainerColor = AppColors.searchBackground,
+            unfocusedContainerColor = AppColors.searchBackground,
+            cursorColor = AppColors.black,
+            focusedTextColor = AppColors.black,
+            unfocusedTextColor = AppColors.black
         ),
         shape = RoundedCornerShape(16.dp),
         singleLine = true
@@ -273,9 +284,10 @@ fun SearchTextField(
 @Composable
 fun SearchPreview() {
     PlaylistMakerTheme {
-        Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFFFFFFFF)) {
+        Surface(modifier = Modifier.fillMaxSize(), color = AppColors.white) {
             SearchScreen(
-                onBackClick = { }
+                onBackClick = { },
+                onTrackClick = { }
             )
         }
     }

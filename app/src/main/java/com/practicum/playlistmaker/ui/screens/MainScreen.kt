@@ -29,18 +29,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.practicum.playlistmaker.R
+import com.practicum.playlistmaker.ui.theme.AppColors
 import com.practicum.playlistmaker.ui.theme.PlaylistMakerTheme
 
 @Composable
 fun MainScreen(
     onSearchClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onPlaylistsClick: () -> Unit,
+    onFavoritesClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -53,7 +57,7 @@ fun MainScreen(
                 .fillMaxSize()
                 .padding(top = 70.dp)
                 .background(
-                    color = Color.White,
+                    color = AppColors.white,
                     shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
                 )
         ) {
@@ -65,29 +69,27 @@ fun MainScreen(
             ) {
                 MenuItem(
                     icon = Icons.Default.Search,
-                    title = "Поиск",
+                    title = stringResource(R.string.search_menu_item),
                     onClick = onSearchClick
                 )
 
                 MenuItem(
                     icon = Icons.Default.LibraryMusic,
-                    title = "Плейлисты",
-                    onClick = {
-                        // Пусто
-                    }
+                    title = stringResource(R.string.playlists_menu_item),
+                    onClick = onPlaylistsClick
+
                 )
 
                 MenuItem(
                     icon = Icons.Default.FavoriteBorder,
-                    title = "Избранное",
-                    onClick = {
-                        // Пусто
-                    }
+                    title = stringResource(R.string.favorites_menu_item),
+                    onClick = onFavoritesClick
+
                 )
 
                 MenuItem(
                     icon = Icons.Default.Settings,
-                    title = "Настройки",
+                    title = stringResource(R.string.settings_menu_item),
                     onClick = onSettingsClick
                 )
                 Spacer(modifier = Modifier.weight(1f))
@@ -99,13 +101,13 @@ fun MainScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .background(Color(0xFF3777F2))
+                .background(AppColors.primaryBlue)
                 .windowInsetsPadding(WindowInsets.statusBars),
             contentAlignment = Alignment.CenterStart
         ) {
             Text(
-                text = "Playlist maker",
-                color = Color.White,
+                text = stringResource(R.string.main_screen_title),
+                color = AppColors.white,
                 style = MaterialTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Medium,
                     fontSize = 22.sp
@@ -130,8 +132,8 @@ fun MenuItem(icon: ImageVector, title: String, onClick: () -> Unit) {
             imageVector = icon,
             contentDescription = title,
             modifier = Modifier.size(28.dp),
-
-            )
+            tint = AppColors.black
+        )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = title,
@@ -139,13 +141,14 @@ fun MenuItem(icon: ImageVector, title: String, onClick: () -> Unit) {
                 fontWeight = FontWeight.Medium,
                 fontSize = 22.sp
             ),
+            color = AppColors.black,
             modifier = Modifier.weight(1f)
         )
         Icon(
             imageVector = Icons.Default.ChevronRight,
             contentDescription = "Go",
             modifier = Modifier.size(30.dp),
-            tint = Color.Gray
+            tint = AppColors.gray
         )
     }
 }
@@ -154,10 +157,13 @@ fun MenuItem(icon: ImageVector, title: String, onClick: () -> Unit) {
 @Composable
 fun MainScreenPreview() {
     PlaylistMakerTheme {
-        Surface(modifier = Modifier.fillMaxSize(), color = Color(0xFF3777F2)) {
+        Surface(modifier = Modifier.fillMaxSize(), color = AppColors.primaryBlue) {
             MainScreen(
                 onSearchClick = { },
-                onSettingsClick = { }
+                onSettingsClick = { },
+                onFavoritesClick = { },
+                onPlaylistsClick = { }
+
             )
         }
     }
