@@ -2,7 +2,6 @@ package com.practicum.playlistmaker.data.repository
 
 import com.practicum.playlistmaker.domain.models.Playlist
 import com.practicum.playlistmaker.domain.models.Track
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
@@ -10,31 +9,31 @@ import kotlinx.coroutines.flow.map
 import java.util.concurrent.CopyOnWriteArrayList
 
 class DatabaseMock(
-    private val scope: CoroutineScope,
 ) {
     private val playlistsList = CopyOnWriteArrayList<Playlist>()
     private val tracksList = CopyOnWriteArrayList<Track>()
 
-    // StateFlows
-    private val playlistsFlow = MutableStateFlow<List<Playlist>>(playlistsList.toList())
-    private val tracksFlow = MutableStateFlow<List<Track>>(tracksList.toList())
+    private val playlistsFlow = MutableStateFlow(playlistsList.toList())
+    private val tracksFlow = MutableStateFlow(tracksList.toList())
 
     // История поиска
     private val historyList = mutableListOf<String>()
+    private val historyFlow = MutableStateFlow(historyList.toList())
 
-    fun getHistory(): List<String> = historyList.toList()
+    fun getHistory(): Flow<List<String>> = historyFlow
 
     fun addToHistory(word: String) {
-        historyList.add(word)
+        if (word.isNotBlank() && !historyList.contains(word)) {
+            historyList.add(0, word) // добавляем в начало
+            if (historyList.size > 10) historyList.removeAt(historyList.lastIndex) // ограничим историю 10
+            historyFlow.value = historyList.toList()
+        }
     }
 
-    // --- Playlists ---
-
+    // Плейлисты
     fun getAllPlaylists(): Flow<List<Playlist>> =
         combine(playlistsFlow, tracksFlow) { pls, trs ->
-            pls.map { p ->
-                p.copy(tracks = trs.filter { it.playlistId == p.id })
-            }
+            pls.map { p -> p.copy(tracks = trs.filter { it.playlistId == p.id }) }
         }
 
     fun getPlaylist(playlistId: Long): Flow<Playlist?> =
@@ -50,23 +49,17 @@ class DatabaseMock(
     }
 
     fun deletePlaylistById(id: Long) {
-        // Удаляем плейлист
         playlistsList.removeIf { it.id == id }
-
-        // Сбрасываем playlistId у треков, которые были в этом плейлисте
         tracksList.replaceAll { t -> if (t.playlistId == id) t.copy(playlistId = 0L) else t }
-
-        // Обновляем Flow
         playlistsFlow.value = playlistsList.toList()
         tracksFlow.value = tracksList.toList()
     }
 
-    // --- Tracks ---
+    // Трэки
     fun getTrackByNameAndArtist(trackName: String, artistName: String): Flow<Track?> =
         tracksFlow.map { list -> list.find { it.trackName == trackName && it.artistName == artistName } }
 
     fun insertTrack(track: Track) {
-        // Удаляем старую версию если есть (одинаковые name+artist)
         tracksList.removeIf { it.trackName == track.trackName && it.artistName == track.artistName }
         tracksList.add(track)
         tracksFlow.value = tracksList.toList()
@@ -80,3 +73,4 @@ class DatabaseMock(
         tracksFlow.value = tracksList.toList()
     }
 }
+

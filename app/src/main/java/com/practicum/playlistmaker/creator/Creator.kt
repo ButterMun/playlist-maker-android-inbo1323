@@ -6,15 +6,12 @@ import com.practicum.playlistmaker.data.repository.TracksRepositoryImpl
 import com.practicum.playlistmaker.data.repository.DatabaseMock
 import com.practicum.playlistmaker.domain.repository.PlaylistsRepository
 import com.practicum.playlistmaker.domain.repository.TracksRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 
 object Creator {
-    private val appScope: CoroutineScope by lazy { CoroutineScope(Dispatchers.IO) }
-    private val database: DatabaseMock by lazy { DatabaseMock(appScope) }
+    private val database: DatabaseMock by lazy { DatabaseMock() }
 
     fun getTracksRepository(): TracksRepository {
-        return TracksRepositoryImpl(RetrofitNetworkClient(Storage()), database)
+        return TracksRepositoryImpl(RetrofitNetworkClient(), database)
     }
 
     fun getPlaylistsRepository(): PlaylistsRepository {

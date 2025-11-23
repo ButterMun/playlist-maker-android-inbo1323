@@ -26,6 +26,11 @@
     <string name="search_error_prefix">Ошибка:</string>
     <string name="track_content_description">Трек %s</string>
     <string name="more_details">Подробнее</string>
+    <string name="search_no_results">Треков не найдено</string>
+    <string name="search_network_error">Проблемы со связью</string>
+    <string name="refresh_button">Обновить</string>
+    <string name="search_history">История поиска</string>
+
 
     <!-- accessibility -->
     <string name="back_button">Назад</string>
@@ -45,7 +50,8 @@
     <string name="add_playlist">Добавить плейлист</string>
     <string name="tracks_count">треков</string>
     <string name="no_playlists">Плейлистов пока нет</string>
-    <string name="select_playlist">Выберите плейлист</string>
+    <string name="no_playlist_track">Треков пока нет</string>
+    <string name="select_playlist">Добавить в плейлист</string>
     <string name="duplicate_playlist_error">Плейлист уже существует</string>
 
 
@@ -60,14 +66,27 @@
     <string name="added_to_playlist">Добавлено в плейлист</string>
     <string name="select_playlist_title">Выберите плейлист</string>
     <string name="close">Закрыть</string>
+    <string name="track_duration">Длительность</string>
+    <string name="track_added_to_playlist">Трек "%1$s" добавлен в плейлист "%2$s"</string>
 
 
     <!-- Favorites -->
-    <string name="favorites_screen_title">Избранное</string>
+    <string name="favorites_screen_title">Избранные треки</string>
     <string name="no_favorites">Избранных треков пока нет</string>
 
     <!-- Playlist -->
-    <string name="playlist_tracks_info">Треков: %1$d • %2$d мин</string>
+    <string name="playlist_tracks_info">Минут: %1$d • %2$d треков</string>
+    <string name="more_options">Меню</string>
+    <string name="share">Поделиться</string>
+    <string name="edit_playlist_info">Редактировать информацию</string>
+    <string name="delete_playlist">Удалить плейлист</string>
+    <string name="no_description">Описание отсутствует</string>
+    <string name="delete_playlist_confirm">Вы уверены, что хотите удалить этот плейлист?</string>
+    <string name="delete_track">Удалить трек</string>
+    <string name="delete_track_confirm">Вы уверены, что хотите удалить этот трек из плейлиста?</string>
+    <string name="delete_track_favorites_confirm">Вы уверены, что хотите удалить этот трек из избранного?</string>
+    <string name="yes">Да</string>
+    <string name="no">Нет</string>
 
 
 

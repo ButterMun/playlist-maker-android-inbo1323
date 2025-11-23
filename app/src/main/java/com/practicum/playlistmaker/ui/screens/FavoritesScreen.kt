@@ -2,31 +2,18 @@ package com.practicum.playlistmaker.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -54,26 +41,26 @@ fun FavoritesScreen(
 
     val favoriteTracks by viewModel.favoriteList.collectAsState(initial = emptyList())
 
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var selectedTrack by remember { mutableStateOf<Track?>(null) }
+
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
-        // Белый контент
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 70.dp)
-                .background(
-                    color = AppColors.white,
-                    shape = RoundedCornerShape(0.dp)
-                )
+                .background(AppColors.white)
         ) {
-            // Контент избранного
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(vertical = 8.dp)
             ) {
+
                 if (favoriteTracks.isEmpty()) {
                     Box(
                         modifier = Modifier
@@ -90,30 +77,36 @@ fun FavoritesScreen(
                 } else {
                     LazyColumn(
                         modifier = Modifier
-                            .fillMaxSize()
+                            .fillMaxWidth()
                             .padding(horizontal = 16.dp)
                     ) {
                         items(favoriteTracks) { track ->
                             TrackListItem(
                                 track = track,
-                                onClick = { onTrackClick(track) }
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .combinedClickable(
+                                        onClick = { onTrackClick(track) },
+                                        onLongClick = {
+                                            selectedTrack = track
+                                            showDeleteDialog = true
+                                        }
+                                    )
                             )
+
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.weight(1f))
             }
         }
 
-        // Синяя шапка поверх контента
+        // Верхняя панель
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .background(AppColors.white)
-                .windowInsetsPadding(WindowInsets.statusBars),
+                .background(AppColors.white),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
@@ -143,6 +136,34 @@ fun FavoritesScreen(
                 )
             }
         }
+    }
+
+    // Диалог удаления
+    if (showDeleteDialog && selectedTrack != null) {
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text(text = stringResource(R.string.delete_track)) },
+            text = { Text(text = stringResource(R.string.delete_track_favorites_confirm)) },
+            confirmButton = {
+                Text(
+                    text = stringResource(R.string.yes),
+                    modifier = Modifier
+                        .clickable {
+                            viewModel.updateTrackFavoriteStatus(selectedTrack!!, false)
+                            showDeleteDialog = false
+                        }
+                        .padding(8.dp)
+                )
+            },
+            dismissButton = {
+                Text(
+                    text = stringResource(R.string.no),
+                    modifier = Modifier
+                        .clickable { showDeleteDialog = false }
+                        .padding(8.dp)
+                )
+            }
+        )
     }
 }
 

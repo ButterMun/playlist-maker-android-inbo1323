@@ -6,31 +6,36 @@ import com.practicum.playlistmaker.domain.models.Track
 import com.practicum.playlistmaker.domain.network.NetworkClient
 import com.practicum.playlistmaker.domain.repository.TracksRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 class TracksRepositoryImpl(
     private val networkClient: NetworkClient,
-    private val database: DatabaseMock
+    val database: DatabaseMock
 ) : TracksRepository {
 
     override suspend fun searchTracks(expression: String): List<Track> {
         return withContext(Dispatchers.IO) {
             val response = networkClient.doRequest(TracksSearchRequest(expression))
-            delay(800) // Эмуляция задержки
             if (response.resultCode == 200) {
                 (response as TracksSearchResponse).results.map { dto ->
                     val seconds = dto.trackTimeMillis / 1000
                     val minutes = seconds / 60
                     val trackTime = "%02d:%02d".format(minutes, seconds - minutes * 60)
-                    Track(dto.trackName, dto.artistName, trackTime)
+                    Track(
+                        trackName = dto.trackName,
+                        artistName = dto.artistName,
+                        trackTime = trackTime,
+                        artworkUrl100 = dto.artworkUrl100
+                    )
                 }
             } else {
-                emptyList()
+                throw IOException("Ошибка сети: ${response.resultCode}") as Throwable
             }
         }
     }
+
 
     override fun getTrackByNameAndArtist(track: Track): Flow<Track?> {
         return database.getTrackByNameAndArtist(track.trackName, track.artistName)
@@ -59,4 +64,6 @@ class TracksRepositoryImpl(
     override suspend fun deleteTracksByPlaylistId(playlistId: Long) {
         database.deleteTracksByPlaylistId(playlistId)
     }
+
+
 }

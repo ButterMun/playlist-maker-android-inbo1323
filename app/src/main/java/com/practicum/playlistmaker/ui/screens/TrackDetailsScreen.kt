@@ -1,5 +1,6 @@
 package com.practicum.playlistmaker.ui.screens
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,13 +16,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.models.Track
 import com.practicum.playlistmaker.ui.screens.playlists.PlaylistViewModel
@@ -35,24 +38,19 @@ fun TrackDetailsScreen(
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val viewModel: PlaylistViewModel = viewModel(
+    val viewModel: PlaylistViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = PlaylistViewModel.getViewModelFactory()
     )
 
-    // Локальное состояние трека для рендера
+    val context = LocalContext.current
+
     var displayedTrack by remember { mutableStateOf(track) }
-
-    // Состояние избранного
     var isFavorite by remember { mutableStateOf(displayedTrack.favorite) }
-
-    // Состояние BottomSheet
     var showPlaylistSheet by remember { mutableStateOf(false) }
 
-    // Подписка на базу
     val currentTrackState by viewModel.isTrackInPlaylist(displayedTrack).collectAsState(initial = null)
     val playlists by viewModel.playlists.collectAsState()
 
-    // Синхронизация с базой
     LaunchedEffect(currentTrackState) {
         currentTrackState?.let {
             displayedTrack = it
@@ -60,7 +58,6 @@ fun TrackDetailsScreen(
         }
     }
 
-    // Сохраняем трек в базу при первом открытии
     LaunchedEffect(displayedTrack) {
         if (currentTrackState == null) {
             viewModel.saveTrackToDatabase(displayedTrack)
@@ -75,93 +72,128 @@ fun TrackDetailsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 70.dp)
-                .background(color = AppColors.white, shape = RoundedCornerShape(0.dp))
+                .background(color = AppColors.white)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 8.dp)
-            ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp),
+                        .padding(26.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_music),
-                        contentDescription = displayedTrack.trackName,
-                        modifier = Modifier
-                            .size(120.dp)
-                            .padding(bottom = 24.dp),
-                        tint = AppColors.gray
-                    )
 
+                    // Картинка
+                    if (displayedTrack.artworkUrl100.isNotEmpty()) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(displayedTrack.artworkUrl100)
+                                .crossfade(true)
+                                .build(),
+                            contentDescription = displayedTrack.trackName,
+                            placeholder = painterResource(R.drawable.ic_music),
+                            error = painterResource(R.drawable.ic_music),
+                            modifier = Modifier
+                                .size(312.dp)
+                                .padding(bottom = 24.dp)
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_music),
+                            contentDescription = displayedTrack.trackName,
+                            modifier = Modifier
+                                .size(360.dp)
+                                .padding(bottom = 24.dp),
+                            tint = AppColors.gray
+                        )
+                    }
+
+                    // Название трека
                     Text(
                         text = displayedTrack.trackName,
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = AppColors.black,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp)
                     )
 
+                    // Автор
                     Text(
                         text = displayedTrack.artistName,
                         fontSize = 18.sp,
-                        color = AppColors.primaryBlue,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        color = AppColors.black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp)
                     )
 
-                    Text(
-                        text = displayedTrack.trackTime,
-                        fontSize = 16.sp,
-                        color = AppColors.gray,
-                        modifier = Modifier.padding(bottom = 32.dp)
-                    )
-
+                    // Иконки
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceEvenly
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.clickable {
-                                val newFavorite = !isFavorite
-                                isFavorite = newFavorite
-                                viewModel.toggleFavorite(displayedTrack, newFavorite)
-                            }
-                        ) {
-                            Icon(
-                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
-                                contentDescription = stringResource(R.string.add_to_favorites),
-                                modifier = Modifier.size(32.dp),
-                                tint = if (isFavorite) AppColors.red else AppColors.gray
-                            )
-                            Text(
-                                text = stringResource(R.string.favorite),
-                                fontSize = 12.sp,
-                                color = AppColors.black,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-                        }
 
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier.clickable { showPlaylistSheet = true }
+                        // Плейлист
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .background(AppColors.lightGray, RoundedCornerShape(50))
+                                .clickable { showPlaylistSheet = true },
+                            contentAlignment = Alignment.Center
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.PlaylistAdd,
                                 contentDescription = stringResource(R.string.add_to_playlist),
-                                modifier = Modifier.size(32.dp),
-                                tint = AppColors.gray
-                            )
-                            Text(
-                                text = stringResource(R.string.playlist),
-                                fontSize = 12.sp,
-                                color = AppColors.black,
-                                modifier = Modifier.padding(top = 4.dp)
+                                tint = AppColors.gray,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
+
+                        // Избранное
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .background(AppColors.lightGray, RoundedCornerShape(50))
+                                .clickable {
+                                    val newFavorite = !isFavorite
+                                    isFavorite = newFavorite
+                                    viewModel.toggleFavorite(displayedTrack, newFavorite)
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
+                                contentDescription = stringResource(R.string.favorite),
+                                tint = if (isFavorite) AppColors.red else AppColors.gray,
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
+                    }
+
+                    // Длительность
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = stringResource(R.string.track_duration),
+                            fontSize = 16.sp,
+                            color = AppColors.gray
+                        )
+                        Text(
+                            text = displayedTrack.trackTime,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = AppColors.black
+                        )
                     }
                 }
 
@@ -169,6 +201,7 @@ fun TrackDetailsScreen(
             }
         }
 
+        // Верхняя панель
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -190,27 +223,24 @@ fun TrackDetailsScreen(
                         .clickable { onBackClick() },
                     tint = AppColors.black
                 )
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Text(
-                    text = stringResource(R.string.track_details_title),
-                    color = AppColors.black,
-                    style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 22.sp
-                    )
-                )
             }
         }
 
-        // BottomSheet для выбора плейлиста
+        // BottomSheet
         if (showPlaylistSheet) {
             PlaylistSelectionBottomSheet(
                 playlists = playlists,
                 onPlaylistSelected = { playlist ->
                     viewModel.addTrackToPlaylist(displayedTrack, playlist.id)
                     showPlaylistSheet = false
+
+                    val message = context.getString(
+                        R.string.track_added_to_playlist,
+                        displayedTrack.trackName,
+                        playlist.name
+                    )
+
+                    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                 },
                 onDismiss = { showPlaylistSheet = false }
             )
@@ -241,8 +271,12 @@ fun PlaylistSelectionBottomSheet(
                 text = stringResource(R.string.select_playlist),
                 style = MaterialTheme.typography.headlineSmall,
                 color = AppColors.black,
-                modifier = Modifier.padding(bottom = 16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentWidth(Alignment.CenterHorizontally)
+                    .padding(bottom = 16.dp)
             )
+
 
             if (playlists.isEmpty()) {
                 Box(
@@ -303,9 +337,7 @@ fun PlaylistBottomSheetItem(
 
         Spacer(modifier = Modifier.width(16.dp))
 
-        Column(
-            modifier = Modifier.weight(1f)
-        ) {
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = playlist.name,
                 style = MaterialTheme.typography.bodyLarge.copy(
@@ -315,22 +347,9 @@ fun PlaylistBottomSheetItem(
                 color = AppColors.black
             )
 
-            if (playlist.description.isNotEmpty()) {
-                Text(
-                    text = playlist.description,
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        lineHeight = 18.sp
-                    ),
-                    color = AppColors.gray,
-                    maxLines = 1
-                )
-            }
-
             Text(
                 text = "${playlist.tracks.size} ${stringResource(R.string.tracks_count)}",
-                style = MaterialTheme.typography.bodySmall.copy(
-                    lineHeight = 16.sp
-                ),
+                style = MaterialTheme.typography.bodySmall,
                 color = AppColors.gray,
                 modifier = Modifier.padding(top = 2.dp)
             )
@@ -344,7 +363,7 @@ fun TrackDetailsPreview() {
     PlaylistMakerTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = AppColors.white) {
             TrackDetailsScreen(
-                track = Track("Bohemian Rhapsody", "Queen", "05:55"),
+                track = Track("Bohemian Rhapsody", "Queen", "05:55", ""),
                 onBackClick = {}
             )
         }

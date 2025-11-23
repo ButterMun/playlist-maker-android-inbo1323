@@ -2,42 +2,24 @@ package com.practicum.playlistmaker.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,6 +33,7 @@ import com.practicum.playlistmaker.ui.screens.search.SearchViewModel
 import com.practicum.playlistmaker.ui.screens.search.components.TrackListItem
 import com.practicum.playlistmaker.ui.theme.AppColors
 import com.practicum.playlistmaker.ui.theme.PlaylistMakerTheme
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,110 +42,88 @@ fun SearchScreen(
     onTrackClick: (Track) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Получаем ViewModel через фабрику
-    val viewModel: SearchViewModel = viewModel(
-        factory = SearchViewModel.getViewModelFactory()
-    )
-
-    // Состояние экрана из ViewModel
+    val viewModel: SearchViewModel = viewModel(factory = SearchViewModel.getViewModelFactory())
     val screenState by viewModel.searchScreenState.collectAsState()
+    val searchText by viewModel.searchTextState.collectAsState()
+    val history by viewModel.historyState.collectAsState()
 
-    // Локальное состояние для текстового поля
-    var searchText by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
-    Box(
-        modifier = modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopCenter
-    ) {
-        // Белый контент
+    Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 70.dp)
-                .background(
-                    color = AppColors.white,
-                    shape = RoundedCornerShape(0.dp)
-                )
+                .background(AppColors.white)
         ) {
-            // Контент экрана поиска
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(vertical = 16.dp)
-            ) {
-                // Поисковая строка
-                SearchTextField(
+
+            Column(modifier = Modifier.fillMaxSize().padding(vertical = 16.dp)) {
+                SearchTextFieldWithSuggestions(
                     value = searchText,
-                    onValueChange = { searchText = it },
+                    onValueChange = { viewModel.onQueryChanged(it) },
                     onSearchClick = {
-                        if (searchText.isNotEmpty()) {
-                            viewModel.search(searchText)
-                        }
+                        val q = searchText.trim()
+                        if (q.isNotEmpty()) coroutineScope.launch { viewModel.searchQueryFromUI(q) }
                     },
-                    onClearClick = {
-                        searchText = ""
-                        viewModel.clearSearch()
-                                   },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp)
+                    onClearClick = { viewModel.clearSearch() },
+                    suggestions = history,
+                    onSuggestionClick = { viewModel.onQueryChanged(it) },
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Отображение состояния поиска
                 when (screenState) {
-                    is SearchState.Initial -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = stringResource(R.string.search_initial_text),
-                                fontSize = 16.sp,
-                                color = AppColors.gray
-                            )
-                        }
+                    is SearchState.Initial -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = stringResource(R.string.search_initial_text),
+                            fontSize = 16.sp,
+                            color = AppColors.gray
+                        )
                     }
-
-                    is SearchState.Searching -> {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
+                    is SearchState.Searching -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) { CircularProgressIndicator() }
 
                     is SearchState.Success -> {
                         val tracks = (screenState as SearchState.Success).foundList
                         if (tracks.isEmpty()) {
                             Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(16.dp),
+                                modifier = Modifier.fillMaxSize(),
                                 contentAlignment = Alignment.Center
                             ) {
-                                Text(
-                                    text = stringResource(R.string.search_empty_results),
-                                    fontSize = 16.sp,
-                                    color = AppColors.gray
-                                )
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icon(
+                                        imageVector = Icons.Default.MusicNote,
+                                        contentDescription = null,
+                                        tint = AppColors.gray,
+                                        modifier = Modifier.size(64.dp)
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = stringResource(R.string.search_no_results),
+                                        fontSize = 16.sp,
+                                        color = AppColors.gray
+                                    )
+                                }
                             }
                         } else {
                             LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp)
+                                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)
                             ) {
                                 items(tracks) { track ->
                                     TrackListItem(
                                         track = track,
-                                        onClick = { onTrackClick(track) }
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .combinedClickable(
+                                                onClick = { onTrackClick(track) }
+                                            )
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                 }
@@ -170,51 +131,54 @@ fun SearchScreen(
                         }
                     }
 
-                    is SearchState.Fail -> {
-                        val error = (screenState as SearchState.Fail).error
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
+                    is SearchState.Fail -> Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.CloudOff,
+                                contentDescription = null,
+                                tint = AppColors.red,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "${stringResource(R.string.search_error_prefix)} $error",
+                                text = stringResource(R.string.search_network_error),
                                 fontSize = 16.sp,
                                 color = AppColors.red
                             )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(onClick = {
+                                coroutineScope.launch { viewModel.searchQueryFromUI(searchText) }
+                            }) {
+                                Text(text = stringResource(R.string.refresh_button))
+                            }
                         }
                     }
                 }
             }
         }
 
-        // Синяя шапка поверх контента
+        // Верхняя панель
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .background(AppColors.white)
-                .windowInsetsPadding(WindowInsets.statusBars),
+                .background(AppColors.white),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 12.dp, end = 16.dp)
+                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 16.dp)
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.back_button),
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clickable { onBackClick() },
+                    modifier = Modifier.size(32.dp).clickable { onBackClick() },
                     tint = AppColors.black
                 )
-
                 Spacer(modifier = Modifier.width(16.dp))
-
                 Text(
                     text = stringResource(R.string.search_screen_title),
                     color = AppColors.black,
@@ -228,57 +192,99 @@ fun SearchScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SearchTextField(
+fun SearchTextFieldWithSuggestions(
     value: String,
     onValueChange: (String) -> Unit,
     onSearchClick: () -> Unit,
     onClearClick: () -> Unit,
+    suggestions: List<String>,
+    onSuggestionClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = modifier,
-        placeholder = {
-            Text(
-                text = stringResource(R.string.search_hint),
-                color = AppColors.gray,
-                fontSize = 16.sp
-            )
-        },
-        leadingIcon = {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = stringResource(R.string.search_icon),
-                tint = AppColors.gray,
-                modifier = Modifier.clickable { onSearchClick() }
-            )
-        },
-        trailingIcon = {
-            if (value.isNotEmpty()) {
+    var expanded by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(false) }
+
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = {
+                onValueChange(it)
+                expanded = isFocused && it.isEmpty() && suggestions.isNotEmpty()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .onFocusChanged { focusState ->
+                    isFocused = focusState.isFocused
+                    expanded = isFocused && value.isEmpty() && suggestions.isNotEmpty()
+                },
+            placeholder = { Text(stringResource(R.string.search_hint), color = AppColors.gray) },
+            leadingIcon = {
                 Icon(
-                    imageVector = Icons.Default.Close,
-                    contentDescription = stringResource(R.string.clear_search),
-                    modifier = Modifier
-                        .clickable { onClearClick() },
-                    tint = AppColors.gray
+                    imageVector = Icons.Default.Search,
+                    contentDescription = stringResource(R.string.search_icon),
+                    tint = AppColors.gray,
+                    modifier = Modifier.clickable { onSearchClick() }
                 )
+            },
+            trailingIcon = {
+                if (value.isNotEmpty()) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = stringResource(R.string.clear_search),
+                        modifier = Modifier.clickable {
+                            onClearClick()
+                            expanded = isFocused && suggestions.isNotEmpty()
+                        },
+                        tint = AppColors.gray
+                    )
+                }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = AppColors.gray,
+                unfocusedBorderColor = AppColors.lightGray,
+                focusedContainerColor = AppColors.searchBackground,
+                unfocusedContainerColor = AppColors.searchBackground,
+                cursorColor = AppColors.black,
+                focusedTextColor = AppColors.black,
+                unfocusedTextColor = AppColors.black
+            ),
+            shape = RoundedCornerShape(16.dp),
+            singleLine = true
+        )
+
+        if (expanded) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp, topStart = 16.dp, topEnd = 16.dp))
+                    .background(AppColors.searchBackground)
+            ) {
+                Column {
+                    suggestions.forEach { suggestion ->
+                        DropdownMenuItem(
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.AccessTime,
+                                    contentDescription = null,
+                                    tint = AppColors.lightGray
+                                )
+                            },
+                            text = { Text(suggestion, color = AppColors.black) },
+                            onClick = {
+                                onSuggestionClick(suggestion)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
-        },
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = AppColors.gray,
-            unfocusedBorderColor = AppColors.lightGray,
-            focusedContainerColor = AppColors.searchBackground,
-            unfocusedContainerColor = AppColors.searchBackground,
-            cursorColor = AppColors.black,
-            focusedTextColor = AppColors.black,
-            unfocusedTextColor = AppColors.black
-        ),
-        shape = RoundedCornerShape(16.dp),
-        singleLine = true
-    )
+        }
+    }
 }
+
+
 
 @Preview(showBackground = true)
 @Composable

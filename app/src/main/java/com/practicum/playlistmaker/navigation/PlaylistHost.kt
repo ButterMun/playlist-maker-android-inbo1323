@@ -4,19 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.practicum.playlistmaker.domain.models.Track
-import com.practicum.playlistmaker.ui.screens.MainScreen
-import com.practicum.playlistmaker.ui.screens.SearchScreen
-import com.practicum.playlistmaker.ui.screens.SettingsScreen
-import com.practicum.playlistmaker.ui.screens.FavoritesScreen
-import com.practicum.playlistmaker.ui.screens.NewPlaylistScreen
+import com.practicum.playlistmaker.ui.screens.*
 import com.practicum.playlistmaker.ui.screens.PlaylistsScreen
+import com.practicum.playlistmaker.ui.screens.NewPlaylistScreen
 import com.practicum.playlistmaker.ui.screens.TrackDetailsScreen
+import com.practicum.playlistmaker.ui.screens.PlaylistScreen
 
 @Composable
-fun PlaylistHost(
-    navController: NavHostController
-) {
+fun PlaylistHost(navController: NavHostController) {
     NavHost(
         navController = navController,
         startDestination = Screens.MAIN.name
@@ -47,8 +44,19 @@ fun PlaylistHost(
             PlaylistsScreen(
                 onBackClick = { navigateBack(navController) },
                 onAddNewPlaylist = { navigateToNewPlaylist(navController) },
-                onPlaylistClick = { playlistId ->
-                }
+                onPlaylistClick = { playlistId -> navigateToPlaylist(navController, playlistId) }
+            )
+        }
+
+        composable(
+            "${Screens.PLAYLIST_DETAIL.name}/{playlistId}",
+            arguments = listOf(navArgument("playlistId") { defaultValue = 0L })
+        ) { backStackEntry ->
+            val playlistId = backStackEntry.arguments?.getLong("playlistId") ?: 0L
+            PlaylistScreen(
+                playlistId = playlistId,
+                onBackClick = { navigateBack(navController) },
+                onTrackClick = { track -> navigateToTrackDetails(navController, track) }
             )
         }
 
@@ -60,13 +68,11 @@ fun PlaylistHost(
         }
 
         composable(Screens.TRACK_DETAILS.name) {
-            // Получаем трек из аргументов
             val track = navController.previousBackStackEntry
                 ?.savedStateHandle
                 ?.get<Track>("track")
-
             TrackDetailsScreen(
-                track = track ?: Track("", "", ""), // Заглушка если трек не передан
+                track = track ?: Track("", "", "", ""),
                 onBackClick = { navigateBack(navController) }
             )
         }
@@ -80,62 +86,41 @@ fun PlaylistHost(
     }
 }
 
-// Функции навигации
+// Навигационные функции
 private fun navigateToSearch(navController: NavHostController) {
-    if (navController.currentDestination?.route != Screens.SEARCH.name) {
-        navController.navigate(Screens.SEARCH.name) {
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
+    if (navController.currentDestination?.route != Screens.SEARCH.name)
+        navController.navigate(Screens.SEARCH.name) { launchSingleTop = true; restoreState = true }
 }
 
 private fun navigateToSettings(navController: NavHostController) {
-    if (navController.currentDestination?.route != Screens.SETTINGS.name) {
-        navController.navigate(Screens.SETTINGS.name) {
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
+    if (navController.currentDestination?.route != Screens.SETTINGS.name)
+        navController.navigate(Screens.SETTINGS.name) { launchSingleTop = true; restoreState = true }
 }
 
 private fun navigateToPlaylists(navController: NavHostController) {
-    if (navController.currentDestination?.route != Screens.PLAYLISTS.name) {
-        navController.navigate(Screens.PLAYLISTS.name) {
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
+    if (navController.currentDestination?.route != Screens.PLAYLISTS.name)
+        navController.navigate(Screens.PLAYLISTS.name) { launchSingleTop = true; restoreState = true }
+}
+
+private fun navigateToPlaylist(navController: NavHostController, playlistId: Long) {
+    navController.navigate("${Screens.PLAYLIST_DETAIL.name}/$playlistId") { launchSingleTop = true }
 }
 
 private fun navigateToFavorites(navController: NavHostController) {
-    if (navController.currentDestination?.route != Screens.FAVORITES.name) {
-        navController.navigate(Screens.FAVORITES.name) {
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
+    if (navController.currentDestination?.route != Screens.FAVORITES.name)
+        navController.navigate(Screens.FAVORITES.name) { launchSingleTop = true; restoreState = true }
 }
 
 private fun navigateToNewPlaylist(navController: NavHostController) {
-    if (navController.currentDestination?.route != Screens.NEW_PLAYLIST.name) {
-        navController.navigate(Screens.NEW_PLAYLIST.name) {
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
+    if (navController.currentDestination?.route != Screens.NEW_PLAYLIST.name)
+        navController.navigate(Screens.NEW_PLAYLIST.name) { launchSingleTop = true; restoreState = true }
 }
 
 private fun navigateToTrackDetails(navController: NavHostController, track: Track) {
     navController.currentBackStackEntry?.savedStateHandle?.set("track", track)
-
-    navController.navigate(Screens.TRACK_DETAILS.name) {
-        launchSingleTop = true
-    }
+    navController.navigate(Screens.TRACK_DETAILS.name) { launchSingleTop = true }
 }
 
 private fun navigateBack(navController: NavHostController) {
-    if (navController.previousBackStackEntry != null) {
-        navController.popBackStack()
-    }
+    navController.previousBackStackEntry?.let { navController.popBackStack() }
 }

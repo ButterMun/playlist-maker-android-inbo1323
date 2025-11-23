@@ -72,6 +72,12 @@ class PlaylistViewModel(
         }
     }
 
+    fun updateTrackFavoriteStatus(track: Track, isFavorite: Boolean) {
+        viewModelScope.launch {
+            tracksRepository.updateTrackFavoriteStatus(track, isFavorite)
+        }
+    }
+
     fun deletePlaylistById(id: Long) {
         viewModelScope.launch(Dispatchers.IO) {
             tracksRepository.deleteTracksByPlaylistId(id)

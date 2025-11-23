@@ -1,7 +1,5 @@
 package com.practicum.playlistmaker.ui.screens.search.components
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,33 +8,34 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.models.Track
+import com.practicum.playlistmaker.ui.theme.AppColors
 
 @Composable
 fun TrackListItem(
     track: Track,
-    onClick: () -> Unit
-
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
             .padding(vertical = 8.dp)
     ) {
         Row(
@@ -46,60 +45,35 @@ fun TrackListItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Левая часть: иконка музыки
-            Image(
-                painter = painterResource(id = R.drawable.ic_music),
-                contentDescription = stringResource(R.string.track_content_description, track.trackName),
-                modifier = Modifier.size(40.dp)
+            // картинка
+            AsyncImage(
+                model = track.artworkUrl100,
+                contentDescription = track.trackName,
+                placeholder = painterResource(R.drawable.ic_music),
+                error = painterResource(R.drawable.ic_music),
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShape(3.dp)),
+                contentScale = ContentScale.Crop
             )
 
-            // Центральная часть: информация о треке
+            // тексты
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(horizontal = 12.dp),
-                horizontalAlignment = Alignment.Start
+                    .padding(horizontal = 12.dp)
             ) {
-                Text(
-                    text = track.trackName,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    maxLines = 1
-                )
+                Text(track.trackName, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = track.artistName,
-                    fontSize = 14.sp,
-                    maxLines = 1
-                )
+                Text("${track.artistName} ● ${track.trackTime}", fontSize = 14.sp, color = AppColors.gray)
             }
 
-            // Правая часть: время трека и стрелка
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.End
-            ) {
-                Text(
-                    text = track.trackTime,
-                    fontSize = 14.sp,
-                    modifier = Modifier.padding(end = 8.dp)
-                )
-
-                Icon(
-                    imageVector = Icons.Default.ChevronRight,
-                    contentDescription = stringResource(R.string.more_details),
-                    tint = Color.Gray,
-                    modifier = Modifier.size(40.dp)
-                )
-            }
+            Icon(
+                imageVector = Icons.Default.ChevronRight,
+                contentDescription = stringResource(R.string.more_details),
+                tint = AppColors.gray,
+                modifier = Modifier.size(40.dp)
+            )
         }
-
-        // Разделитель
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp),
-            thickness = 0.5.dp
-        )
     }
 }

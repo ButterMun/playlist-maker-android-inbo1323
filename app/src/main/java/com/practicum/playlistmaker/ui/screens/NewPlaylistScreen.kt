@@ -157,7 +157,11 @@ fun NewPlaylistScreen(
                             .fillMaxWidth()
                             .height(50.dp),
                         enabled = playlistName.isNotEmpty(),
-                        shape = RoundedCornerShape(8.dp)
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = AppColors.primaryBlue,
+                            contentColor = AppColors.white
+                        )
                     ) {
                         Text(
                             text = stringResource(R.string.save_playlist),
@@ -165,6 +169,7 @@ fun NewPlaylistScreen(
                             fontWeight = FontWeight.Medium
                         )
                     }
+
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -175,8 +180,7 @@ fun NewPlaylistScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(70.dp)
-                .background(AppColors.white)
-                .windowInsetsPadding(WindowInsets.statusBars),
+                .background(AppColors.white),
             contentAlignment = Alignment.CenterStart
         ) {
             Row(
