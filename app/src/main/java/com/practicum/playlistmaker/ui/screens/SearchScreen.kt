@@ -12,16 +12,16 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.MusicNote
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -99,16 +99,17 @@ fun SearchScreen(
                             ) {
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                     Icon(
-                                        imageVector = Icons.Default.MusicNote,
+                                        painter = painterResource(R.drawable.no_tracks),
                                         contentDescription = null,
-                                        tint = AppColors.gray,
-                                        modifier = Modifier.size(64.dp)
+                                        modifier = Modifier.size(120.dp),
+                                        tint = null
                                     )
                                     Spacer(modifier = Modifier.height(8.dp))
                                     Text(
                                         text = stringResource(R.string.search_no_results),
                                         fontSize = 16.sp,
-                                        color = AppColors.gray
+                                        fontWeight = FontWeight.Medium,
+                                        color = AppColors.black
                                     )
                                 }
                             }
@@ -137,16 +138,26 @@ fun SearchScreen(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(
-                                imageVector = Icons.Default.CloudOff,
+                                painter = painterResource(R.drawable.no_connection),
                                 contentDescription = null,
-                                tint = AppColors.red,
-                                modifier = Modifier.size(64.dp)
+                                modifier = Modifier.size(120.dp),
+                                tint = null
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
                                 text = stringResource(R.string.search_network_error),
                                 fontSize = 16.sp,
-                                color = AppColors.red
+                                color = AppColors.black,
+                                fontWeight = FontWeight.Medium
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.search_network_error_2),
+                                fontSize = 16.sp,
+                                color = AppColors.black,
+                                modifier = Modifier.fillMaxWidth(),
+                                fontWeight = FontWeight.Medium,
+                                textAlign = TextAlign.Center
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Button(onClick = {

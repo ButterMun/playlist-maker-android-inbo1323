@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,13 +69,23 @@ fun FavoritesScreen(
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = stringResource(R.string.no_favorites),
-                            fontSize = 16.sp,
-                            color = AppColors.gray
-                        )
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                painter = painterResource(R.drawable.no_tracks),
+                                contentDescription = null,
+                                modifier = Modifier.size(120.dp),
+                                tint = null
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.no_favorites),
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = AppColors.black
+                            )
+                        }
                     }
-                } else {
+                }else {
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()

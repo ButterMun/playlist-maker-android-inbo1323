@@ -26,8 +26,9 @@
     <string name="search_error_prefix">Ошибка:</string>
     <string name="track_content_description">Трек %s</string>
     <string name="more_details">Подробнее</string>
-    <string name="search_no_results">Треков не найдено</string>
+    <string name="search_no_results">Ничего не нашлось</string>
     <string name="search_network_error">Проблемы со связью</string>
+    <string name="search_network_error_2">Загрузка не удалась. Проверьте подключение к интернету</string>
     <string name="refresh_button">Обновить</string>
     <string name="search_history">История поиска</string>
 
@@ -42,10 +43,10 @@
     <string name="playlists_screen_title">Плейлисты</string>
     <string name="new_playlist_title">Новый плейлист</string>
     <string name="playlist_name_hint">Название плейлиста</string>
-    <string name="playlist_name_placeholder">Введите название</string>
+    <string name="playlist_name_placeholder">Название</string>
     <string name="playlist_description_hint">Описание плейлиста</string>
     <string name="playlist_icon">Иконка плейлиста</string>
-    <string name="playlist_description_placeholder">Введите описание</string>
+    <string name="playlist_description_placeholder">Описание</string>
     <string name="save_playlist">Создать</string>
     <string name="add_playlist">Добавить плейлист</string>
     <string name="tracks_count">треков</string>
@@ -72,7 +73,7 @@
 
     <!-- Favorites -->
     <string name="favorites_screen_title">Избранные треки</string>
-    <string name="no_favorites">Избранных треков пока нет</string>
+    <string name="no_favorites">Ваша медиатека пуста</string>
 
     <!-- Playlist -->
     <string name="playlist_tracks_info">Минут: %1$d • %2$d треков</string>
