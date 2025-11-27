@@ -33,12 +33,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.domain.models.Track
 import com.practicum.playlistmaker.ui.screens.playlists.PlaylistViewModel
@@ -94,12 +97,21 @@ fun PlaylistScreen(
                             .padding(bottom = 16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.AddPhotoAlternate,
-                            contentDescription = pl.name,
-                            modifier = Modifier.size(312.dp),
-                            tint = AppColors.gray
-                        )
+                        if (pl.coverImageUri != null) {
+                            AsyncImage(
+                                model = pl.coverImageUri.toUri(),
+                                contentDescription = pl.name,
+                                modifier = Modifier.size(312.dp),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.AddPhotoAlternate,
+                                contentDescription = pl.name,
+                                modifier = Modifier.size(312.dp),
+                                tint = AppColors.gray
+                            )
+                        }
                     }
 
                     // Название

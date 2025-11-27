@@ -88,7 +88,8 @@
     <string name="delete_track_favorites_confirm">Вы уверены, что хотите удалить этот трек из избранного?</string>
     <string name="yes">Да</string>
     <string name="no">Нет</string>
-
+    <string name="playlist_cover">Обложка</string>
+    <string name="add_cover">Добавить обложку</string>
 
 
 </resources>

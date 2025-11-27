@@ -24,7 +24,9 @@ class PlaylistViewModel(
     val favoriteList = tracksRepository.getFavoriteTracks()
 
     private val _duplicatePlaylistError = MutableStateFlow(false)
-    val duplicatePlaylistError = _duplicatePlaylistError.asStateFlow()
+
+    private val _coverImageUri = MutableStateFlow<String?>(null)
+    val coverImageUri = _coverImageUri.asStateFlow()
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
@@ -34,18 +36,24 @@ class PlaylistViewModel(
         }
     }
 
-    fun createNewPlaylist(namePlaylist: String, description: String) {
+    // метод создания плейлиста с обложкой
+    fun createNewPlaylist(namePlaylist: String, description: String, coverImageUri: String? = null) {
         viewModelScope.launch(Dispatchers.IO) {
             val allPlaylists = playlistsRepository.getAllPlaylists().first()
             val exists = allPlaylists.any { it.name.equals(namePlaylist, ignoreCase = true) }
 
             if (!exists) {
-                playlistsRepository.addNewPlaylist(namePlaylist, description)
+                playlistsRepository.addNewPlaylist(namePlaylist, description, coverImageUri)
                 _duplicatePlaylistError.value = false
+                _coverImageUri.value = null
             } else {
                 _duplicatePlaylistError.value = true
             }
         }
+    }
+
+    fun setCoverImageUri(uri: String?) {
+        _coverImageUri.value = uri
     }
 
     fun addTrackToPlaylist(track: Track, playlistId: Long) {

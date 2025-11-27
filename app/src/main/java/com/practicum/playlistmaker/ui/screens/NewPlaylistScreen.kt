@@ -1,47 +1,32 @@
 package com.practicum.playlistmaker.ui.screens
 
-import android.widget.Toast
+import android.Manifest
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AddPhotoAlternate
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import coil.compose.AsyncImage
 import com.practicum.playlistmaker.R
 import com.practicum.playlistmaker.ui.screens.playlists.PlaylistViewModel
 import com.practicum.playlistmaker.ui.theme.AppColors
@@ -54,30 +39,36 @@ fun NewPlaylistScreen(
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val viewModel: PlaylistViewModel = viewModel(
+    val viewModel: PlaylistViewModel = androidx.lifecycle.viewmodel.compose.viewModel(
         factory = PlaylistViewModel.getViewModelFactory()
     )
 
     var playlistName by remember { mutableStateOf("") }
     var playlistDescription by remember { mutableStateOf("") }
+    val coverImageUri by viewModel.coverImageUri.collectAsState()
 
-    val duplicateError by viewModel.duplicatePlaylistError.collectAsState()
     val context = LocalContext.current
-    var toastShown by remember { mutableStateOf(false) }
 
+    // ВЫБОР КАРТИНКИ
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        uri?.let {
+            val flags = Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            try {
+                context.contentResolver.takePersistableUriPermission(it, flags)
+            } catch (_: Exception) { }
 
-    val duplicateErrorText = stringResource(R.string.duplicate_playlist_error)
+            viewModel.setCoverImageUri(it.toString())
+        }
+    }
 
-    LaunchedEffect(duplicateError) {
-        if (duplicateError && !toastShown) {
-            Toast.makeText(
-                context,
-                duplicateErrorText,
-                Toast.LENGTH_SHORT
-            ).show()
-            toastShown = true
-        } else if (!duplicateError) {
-            toastShown = false
+    // Разрешения для старых Android
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            imagePickerLauncher.launch(arrayOf("image/*"))
         }
     }
 
@@ -86,36 +77,74 @@ fun NewPlaylistScreen(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.TopCenter
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 70.dp)
-                .background(color = AppColors.white, shape = RoundedCornerShape(0.dp))
+                .background(color = AppColors.white)
         ) {
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(vertical = 8.dp)
             ) {
+
+
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(top = 32.dp, bottom = 24.dp),
+                        .padding(bottom = 24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.AddPhotoAlternate,
-                        contentDescription = stringResource(R.string.playlist_icon),
-                        modifier = Modifier.size(120.dp),
-                        tint = AppColors.gray
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(205.dp)
+                            .clickable {
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                    imagePickerLauncher.launch(arrayOf("image/*"))
+                                } else {
+                                    when {
+                                        ContextCompat.checkSelfPermission(
+                                            context,
+                                            Manifest.permission.READ_EXTERNAL_STORAGE
+                                        ) == android.content.pm.PackageManager.PERMISSION_GRANTED -> {
+                                            imagePickerLauncher.launch(arrayOf("image/*"))
+                                        }
+
+                                        else -> {
+                                            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE)
+                                        }
+                                    }
+                                }
+                            }
+                    ) {
+                        if (coverImageUri != null) {
+                            AsyncImage(
+                                model = coverImageUri!!.toUri(),
+                                contentDescription = stringResource(R.string.playlist_cover),
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.AddPhotoAlternate,
+                                contentDescription = stringResource(R.string.add_cover),
+                                tint = AppColors.gray,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
                 }
+
 
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 24.dp)
                 ) {
+
                     OutlinedTextField(
                         value = playlistName,
                         onValueChange = { playlistName = it },
@@ -171,8 +200,12 @@ fun NewPlaylistScreen(
                     Button(
                         onClick = {
                             if (playlistName.isNotEmpty()) {
-                                viewModel.createNewPlaylist(playlistName, playlistDescription)
-                                if (!duplicateError) onSaveClick()
+                                viewModel.createNewPlaylist(
+                                    playlistName,
+                                    playlistDescription,
+                                    coverImageUri
+                                )
+                                onSaveClick()
                             }
                         },
                         modifier = Modifier
@@ -191,12 +224,12 @@ fun NewPlaylistScreen(
                             fontWeight = FontWeight.Medium
                         )
                     }
-
                 }
 
                 Spacer(modifier = Modifier.weight(1f))
             }
         }
+
 
         Box(
             modifier = Modifier
@@ -205,12 +238,14 @@ fun NewPlaylistScreen(
                 .background(AppColors.white),
             contentAlignment = Alignment.CenterStart
         ) {
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(start = 12.dp, end = 16.dp)
             ) {
+
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                     contentDescription = stringResource(R.string.back_button),

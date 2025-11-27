@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.practicum.playlistmaker.creator.Creator
-import com.practicum.playlistmaker.data.repository.TracksRepositoryImpl
+import com.practicum.playlistmaker.domain.repository.SearchHistoryRepository
 import com.practicum.playlistmaker.domain.repository.TracksRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,10 +15,9 @@ import kotlinx.coroutines.launch
 import java.io.IOException
 
 class SearchViewModel(
-    private val tracksRepository: TracksRepository
+    private val tracksRepository: TracksRepository,
+    private val searchHistoryRepository: SearchHistoryRepository
 ) : ViewModel() {
-
-    private val database = (tracksRepository as? TracksRepositoryImpl)?.database
 
     private val _searchScreenState = MutableStateFlow<SearchState>(SearchState.Initial)
     val searchScreenState = _searchScreenState.asStateFlow()
@@ -30,9 +29,10 @@ class SearchViewModel(
     val historyState = _historyState.asStateFlow()
 
     init {
-        // История
         viewModelScope.launch {
-            database?.getHistory()?.collect { _historyState.value = it }
+            searchHistoryRepository.getSearchHistory().collect { history ->
+                _historyState.value = history
+            }
         }
 
         // Поиск с дебаунсом
@@ -45,7 +45,8 @@ class SearchViewModel(
                         _searchScreenState.update { SearchState.Initial }
                     } else {
                         search(trimmed)
-                        database?.addToHistory(trimmed)
+                        searchHistoryRepository.addSearchQuery(trimmed)
+                        // История автоматически обновится через Flow выше
                     }
                 }
         }
@@ -54,6 +55,13 @@ class SearchViewModel(
     fun onQueryChanged(q: String) {
         queryFlow.value = q
     }
+
+    fun clearSearch() {
+        _searchScreenState.update { SearchState.Initial }
+        queryFlow.value = ""
+    }
+
+    suspend fun searchQueryFromUI(query: String) = search(query)
 
     private suspend fun search(query: String) {
         try {
@@ -67,19 +75,15 @@ class SearchViewModel(
         }
     }
 
-    fun clearSearch() {
-        _searchScreenState.update { SearchState.Initial }
-        queryFlow.value = ""
-    }
-
-    suspend fun searchQueryFromUI(query: String) = search(query)
-
     companion object {
         fun getViewModelFactory(): ViewModelProvider.Factory =
             object : ViewModelProvider.Factory {
                 @Suppress("UNCHECKED_CAST")
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                    return SearchViewModel(Creator.getTracksRepository()) as T
+                    return SearchViewModel(
+                        Creator.getTracksRepository(),
+                        Creator.getSearchHistoryRepository()
+                    ) as T
                 }
             }
     }
