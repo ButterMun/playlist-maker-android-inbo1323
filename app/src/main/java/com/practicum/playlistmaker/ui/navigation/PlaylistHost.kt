@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.navigation
+package com.practicum.playlistmaker.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

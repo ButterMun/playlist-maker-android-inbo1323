@@ -7,8 +7,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
-import com.practicum.playlistmaker.creator.Creator
-import com.practicum.playlistmaker.navigation.PlaylistHost
+import com.practicum.playlistmaker.domain.creator.Creator
+import com.practicum.playlistmaker.ui.navigation.PlaylistHost
 import com.practicum.playlistmaker.ui.theme.AppColors
 import com.practicum.playlistmaker.ui.theme.PlaylistMakerTheme
 

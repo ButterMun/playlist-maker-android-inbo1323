@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.navigation
+package com.practicum.playlistmaker.ui.navigation
 
 enum class Screens {
     MAIN,
