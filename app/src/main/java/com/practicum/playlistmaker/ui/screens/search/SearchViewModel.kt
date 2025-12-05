@@ -3,7 +3,7 @@ package com.practicum.playlistmaker.ui.screens.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.creator.Creator
+import com.practicum.playlistmaker.domain.creator.Creator
 import com.practicum.playlistmaker.domain.repository.SearchHistoryRepository
 import com.practicum.playlistmaker.domain.repository.TracksRepository
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.practicum.playlistmaker.creator
+package com.practicum.playlistmaker.domain.creator
 
 import android.content.Context
 import androidx.datastore.core.DataStore

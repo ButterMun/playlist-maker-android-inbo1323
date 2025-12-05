@@ -3,7 +3,7 @@ package com.practicum.playlistmaker.ui.screens.playlists
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import com.practicum.playlistmaker.creator.Creator
+import com.practicum.playlistmaker.domain.creator.Creator
 import com.practicum.playlistmaker.domain.models.Playlist
 import com.practicum.playlistmaker.domain.models.Track
 import com.practicum.playlistmaker.domain.repository.PlaylistsRepository
