@@ -65,7 +65,7 @@ Playlist Maker - мобильное приложение для создания
 1.  Клонирование проекта
 ```
 git clone https://github.com/ButterMun/playlist-maker-android-TiniakovAndrei
-cd playlistmaker
+cd playlist-maker-android-TiniakovAndrei
 ```
 
 2. Запустите Android Studio, выберите "Open" и укажите папку проекта
