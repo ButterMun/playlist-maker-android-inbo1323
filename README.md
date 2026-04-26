@@ -1,4 +1,4 @@
-# playlist-maker-android-TiniakovAndrei
+# playlist-maker-android
 ## Описание Проекта
 Playlist Maker - мобильное приложение для создания и управления музыкальными плейлистами.
 Приложение позволяет искать треки через iTunes API, добавлять их в избранное
