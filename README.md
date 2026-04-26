@@ -75,3 +75,4 @@ cd playlist-maker-android-TiniakovAndrei
 4.  Создайте эмулятор через AVD Manager или подключите физическое устройство с включенной отладкой по USB
 
 5.  Нажмите кнопку "Run"
+

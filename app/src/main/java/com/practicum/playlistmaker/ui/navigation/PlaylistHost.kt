@@ -124,3 +124,4 @@ private fun navigateToTrackDetails(navController: NavHostController, track: Trac
 private fun navigateBack(navController: NavHostController) {
     navController.previousBackStackEntry?.let { navController.popBackStack() }
 }
+

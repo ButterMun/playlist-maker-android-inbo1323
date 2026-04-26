@@ -8,3 +8,4 @@ data class ItunesSearchResponseDto(
     @SerializedName("results")
     val results: List<ItunesTrackDto> = emptyList()
 )
+

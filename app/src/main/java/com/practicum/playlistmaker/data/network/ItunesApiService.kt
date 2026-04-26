@@ -12,3 +12,4 @@ interface ItunesApiService {
         @Query("media") media: String = "music"
     ): Call<ItunesSearchResponseDto>
 }
+

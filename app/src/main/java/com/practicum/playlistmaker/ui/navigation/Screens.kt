@@ -10,3 +10,4 @@ enum class Screens {
     TRACK_DETAILS,
     FAVORITES
 }
+

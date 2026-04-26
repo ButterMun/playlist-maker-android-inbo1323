@@ -11,3 +11,4 @@ data class ItunesTrackDto(
     @SerializedName("previewUrl") val previewUrl: String? = null,
     @SerializedName("collectionName") val collectionName: String? = null
 )
+
